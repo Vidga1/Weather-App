@@ -6,42 +6,66 @@ const weatherIcon = document.querySelector(".weather-image i");
 const weather = document.querySelector(".weather");
 const errorText = document.querySelector(".error");
 
+export async function fetchWeatherData(url) {
+	try {
+		const response = await fetch(url);
+		return await response.json();
+	} catch (error) {
+		window.console.error("Error fetching weather data:", error);
+		return null;
+	}
+}
+
+export function setWeatherIcon(weatherCondition) {
+	switch (weatherCondition) {
+	case "Clear":
+		weatherIcon.className = "fa-solid fa-sun";
+		break;
+	case "Rain":
+		weatherIcon.className = "fa-solid fa-cloud-rain";
+		break;
+	case "Mist":
+		weatherIcon.className = "fa-solid fa-cloud-mist";
+		break;
+	case "Drizzle":
+		weatherIcon.className = "fa-solid fa-cloud-drizzle";
+		break;
+	default:
+		weatherIcon.className = "fa-solid fa-cloud";
+	}
+}
+
+export function updateWeatherDisplay(data) {
+	document.querySelector(".city").innerHTML = data.name;
+	document.querySelector(".temp").innerHTML = `${Math.round(data.main.temp)  }℃`;
+	document.querySelector(".humidity").innerHTML = `${data.main.humidity  }%`;
+	document.querySelector(".wind").innerHTML = `${data.wind.speed  } km/h`;
+	setWeatherIcon(data.weather[0].main);
+}
+
 export async function checkWeather(lat, lon, city) {
 	let url;
+
 	if (city) {
 		url = `${apiUrlWeather}&q=${city}&appid=${apiKeyWeather}`;
 	} else {
 		url = `${apiUrlWeather}&lat=${lat}&lon=${lon}&appid=${apiKeyWeather}`;
 	}
 
-	const response = await fetch(url);
+	const data = await fetchWeatherData(url);
 
-	if (response.status === 404) {
+	if (!data || data.cod === "404") {
 		errorText.style.display = "block";
 		weather.style.display = "none";
 	} else {
-		const data = await response.json();
-
-		document.querySelector(".city").innerHTML = data.name;
-		document.querySelector(".temp").innerHTML =
-      `${Math.round(data.main.temp)  }℃`;
-		document.querySelector(".humidity").innerHTML = `${data.main.humidity  }%`;
-		document.querySelector(".wind").innerHTML = `${data.wind.speed  } km/h`;
-
-		if (data.weather[0].main === "Clear") {
-			weatherIcon.className = "fa-solid fa-sun";
-		} else if (data.weather[0].main === "Rain") {
-			weatherIcon.className = "fa-solid fa-cloud-rain";
-		} else if (data.weather[0].main === "Mist") {
-			weatherIcon.className = "fa-solid fa-cloud-mist";
-		} else if (data.weather[0].main === "Drizzle") {
-			weatherIcon.className = "fa-solid fa-cloud-drizzle";
-		}
-
+		updateWeatherDisplay(data);
 		weather.style.display = "block";
 		errorText.style.display = "none";
-
 		// Update the map with the new location
-		initMap(data.coord.lat, data.coord.lon);
+		if (data && data.coord) {
+			initMap(data.coord.lat, data.coord.lon);
+		  } else {
+			window.console.error('Data or coordinates are not defined');
+		  }
 	}
 }

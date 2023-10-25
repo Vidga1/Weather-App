@@ -2,29 +2,39 @@ import { checkWeather } from './weather';
 import { getGeoLocation } from './geoLocation';
 import { addCityToList, updateCityList } from './cityList';
 
-const searchInput = document.querySelector(".search-box input");
-const searchButton = document.querySelector(".search-box button");
-
-document.addEventListener("DOMContentLoaded", () => {
-	const cities = JSON.parse(localStorage.getItem("cities")) || [];
-	cities.forEach(city => addCityToList(city));
-	getGeoLocation();
-});
-
-searchButton.addEventListener("click", () => {
-	const city = searchInput.value;
+export function searchCity(city) {
 	checkWeather(null, null, city);
 	addCityToList(city);
 	updateCityList(city);
-	searchInput.value = "";
-});
+}
 
-searchInput.addEventListener("keydown", (event) => {
+export function initializeCities() {
+	const cities = JSON.parse(localStorage.getItem("cities")) || [];
+	cities.forEach(city => addCityToList(city));
+	getGeoLocation();
+}
+
+export function handleSearchClick() {
+	const searchInput = document.querySelector(".search-box input");
+	searchCity(searchInput.value);
+	searchInput.value = "";
+}
+
+export function handleKeyDown(event) {
 	if (event.keyCode === 13) {
-		const city = searchInput.value;
-		checkWeather(null, null, city);
-		addCityToList(city);
-		updateCityList(city);
-		searchInput.value = "";
+		handleSearchClick();
 	}
-});
+}
+
+export function initializeApp() {
+	const searchButton = document.querySelector(".search-box button");
+	// Обработчик клика по кнопке поиска
+	searchButton.addEventListener("click", handleSearchClick);
+
+	const searchInput = document.querySelector(".search-box input");
+	// Обработчик нажатия клавиши Enter в поле ввода
+	searchInput.addEventListener("keydown", handleKeyDown);
+	initializeCities();
+}
+
+document.addEventListener("DOMContentLoaded", initializeApp);

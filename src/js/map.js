@@ -1,15 +1,25 @@
-/* eslint-disable no-undef */
 let map;
 
 export function initMap(lat, lon) {
-	if (map) {
-		map.setCenter([lat, lon]);
-	} else {
-		ymaps.ready(() => {
-			map = new ymaps.Map('map-test', {
-				center: [lat, lon],
-				zoom: 10
+	const center = [lat, lon];
+
+	global.ymaps.ready(() => {
+		if (!map) {
+			map = new global.ymaps.Map('map-test', {
+				center,
+				zoom: 10,
 			});
-		});
-	}
+		} else {
+
+			map.setCenter(center);
+
+			if (map.geoObjects.getLength() > 0) {
+				map.geoObjects.removeAll();
+			}
+		}
+
+		const placemark = new global.ymaps.Placemark(center);
+	
+		map.geoObjects.add(placemark);
+	});
 }

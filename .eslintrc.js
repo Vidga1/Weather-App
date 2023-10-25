@@ -29,10 +29,17 @@ module.exports = {
 		'no-tabs': 'off',
 		'no-alert': 'off',
 		'prefer-destructuring': 'off',
-		indent: [2, 'tab'],
+		'indent': [2, 'tab'],
 		'no-param-reassign': 'off',
 		'linebreak-style': 'off',
 		'no-unused-vars': 'off',
 		'import/prefer-default-export': 'off',
 	},
+	settings: {
+		"import/resolver": {
+			"node": {
+				"extensions": [".js", ".json"]
+			}
+		}
+	}
 };

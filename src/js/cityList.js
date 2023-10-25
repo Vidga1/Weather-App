@@ -1,10 +1,13 @@
-import { checkWeather } from "./weather";
+import { checkWeather } from './weather';
 
-const cityList = document.querySelector(".city-list")
+
 export function addCityToList(city) {
+	const cityList = document.querySelector(".city-list")
 	const listItem = document.createElement("li");
-	listItem.textContent = city;
-	listItem.addEventListener("click", () => checkWeather(null, null, city));
+	listItem.textContent = city.toUpperCase();
+	listItem.addEventListener("click", () => {
+		checkWeather(null, null, city); });
+		
 	if (cityList.childElementCount === 10) {
 		cityList.removeChild(cityList.firstChild);
 	}

@@ -1,6 +1,5 @@
 import { checkWeather } from './weather';
 
-
 export function addCityToList(city) {
 	const cityList = document.querySelector(".city-list")
 	const listItem = document.createElement("li");

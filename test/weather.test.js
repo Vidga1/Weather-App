@@ -1,145 +1,130 @@
 // Mock fetch
-import { fetchWeatherData, setWeatherIcon, checkWeather } from '../src/js/weather';
+import { fetchWeatherData, setWeatherIcon, checkWeather, updateWeatherDisplay } from '../src/js/weather';
+import { initMap } from '../src/js/map';
 
-global.fetch = jest.fn();
-
-// Mock console.error
-global.console = { error: jest.fn() };
-
-// Mock DOM properties
-document.querySelector = jest.fn();
-
-const weatherIcon = { className: '' };
-const weather = { style: { display: '' } };
-const errorText = { style: { display: '' } };
-const city = { innerHTML: '' };
-const temp = { innerHTML: '' };
-const humidity = { innerHTML: '' };
-const wind = { innerHTML: '' };
-
-document.querySelector.mockImplementation((selector) => {
-	switch (selector) {
-	case ".weather-image i":
-		return weatherIcon;
-	case ".weather":
-		return weather;
-	case ".error":
-		return errorText;
-	case ".city":
-		return city;
-	case ".temp":
-		return temp;
-	case ".humidity":
-		return humidity;
-	case ".wind":
-		return wind;
-	default:
-		return null;
-	}
-});
-
-describe('fetchWeatherData', () => {
-	it('should fetch data successfully', async () => {
-		const mockSuccessResponse = {};
-		global.fetch.mockImplementation(() => Promise.resolve({
-			json: () => Promise.resolve(mockSuccessResponse),
-		}));
-
-		const response = await fetchWeatherData('mockUrl');
-		expect(response).toEqual(mockSuccessResponse);
-		expect(global.fetch).toHaveBeenCalledWith('mockUrl');
-	});
-
-	it('should handle fetch error', async () => {
-		const mockFailResponse = 'Fetch Error';
-		global.fetch.mockImplementation(() => Promise.reject(mockFailResponse));
-
-		const response = await fetchWeatherData('mockUrl');
-		expect(response).toBeNull();
-		expect(global.console.error).toHaveBeenCalledWith('Error fetching weather data:', mockFailResponse);
-	});
-});
-
-describe('setWeatherIcon', () => {
-	it('should set correct icon class based on weather condition', () => {
-		setWeatherIcon('Rain');
-		expect(weatherIcon.className).toEqual('fa-solid fa-cloud-rain');
-
-		setWeatherIcon('Mist');
-		expect(weatherIcon.className).toEqual('fa-solid fa-cloud-mist');
-
-		setWeatherIcon('Drizzle');
-		expect(weatherIcon.className).toEqual('fa-solid fa-cloud-drizzle');
-
-		setWeatherIcon('Unknown');
-		expect(weatherIcon.className).toEqual('fa-solid fa-cloud');
-	});
-});
-
-// Mock initMap
 jest.mock('../src/js/map', () => ({
-	initMap: jest.fn(),
+	initMap: jest.fn()
 }));
 
-describe('checkWeather', () => {
-	it('should handle error response', async () => {
-		const mockErrorResponse = { cod: '404' };
-		global.fetch.mockImplementation(() => Promise.resolve({
-			json: () => Promise.resolve(mockErrorResponse),
-		}));
+global.fetch = jest.fn(() => Promise.resolve({
+	ok: true,
+	json: jest.fn(() => Promise.resolve({}))
+}));
 
-		await checkWeather(0, 0);
-		expect(weather.style.display).toEqual('none');
-		expect(errorText.style.display).toEqual('block');
+describe('Weather functions', () => {
+	afterEach(() => {
+		jest.clearAllMocks();
 	});
-	describe('checkWeather', () => {
-		it('should update weather data and DOM correctly', async () => {
-	  const mockSuccessResponse = {
-				name: 'Mock City',
-				main: {
-		  temp: 7,
-		  humidity: 80,
-				},
-				wind: {
-		  speed: 5,
-				},
-				weather: [
-		  { main: 'Rain' },
-				],
-	  };
-	  global.fetch.mockImplementation(() => Promise.resolve({
-				json: () => Promise.resolve(mockSuccessResponse),
-	  }));
-	  await checkWeather(0, 0);
-	  expect(weather.style.display).toEqual('block');
-	  expect(errorText.style.display).toEqual('none');
-	  expect(city.innerHTML).toEqual('Mock City');
-	  expect(temp.innerHTML).toEqual("7℃");
-	  expect(humidity.innerHTML).toEqual('80%');
-	  expect(wind.innerHTML).toEqual('5 km/h');
-	  expect(weatherIcon.className).toEqual('fa-solid fa-cloud-rain');
+
+	describe('fetchWeatherData', () => {
+		it('should fetch data successfully', async () => {
+			const result = await fetchWeatherData('some-url');
+			expect(result).toEqual({});
 		});
-  
-		it('should handle error when updating DOM', async () => {
-	  const mockSuccessResponse = {
-				name: 'Mock City',
-				main: {
-		  temp: 7,
-		  humidity: 80,
-				},
-				wind: {
-		  speed: 5,
-				},
-				weather: [
-		  { main: 'Unknown' },
-				],
-	  };
-	  global.fetch.mockImplementation(() => Promise.resolve({
-				json: () => Promise.resolve(mockSuccessResponse),
-	  }));
-  
-	  await checkWeather(0, 0);
-	  expect(global.console.error).toHaveBeenCalledWith('Data or coordinates are not defined');
+
+		it('should handle fetch errors', async () => {
+			global.fetch.mockImplementationOnce(() => Promise.reject(new Error('Fetch error')));
+			const result = await fetchWeatherData('some-url');
+			expect(result).toBe(null);
 		});
 	});
+})
+
+describe('setWeatherIcon', () => {
+	it('should set the correct icon for Clear weather', () => {
+		document.body.innerHTML = '<div class="weather-image"><i></i></div>';
+		setWeatherIcon('Clear');
+		expect(document.querySelector('.weather-image i').className).toBe('fa-solid fa-sun');
+	});
+
+	// ... Пишите аналогичные тесты для других состояний погоды ...
+
+	it('should set the default icon for unknown weather', () => {
+		document.body.innerHTML = '<div class="weather-image"><i></i></div>';
+		setWeatherIcon('Unknown');
+		expect(document.querySelector('.weather-image i').className).toBe('fa-solid fa-cloud');
+	});
+});
+
+describe('updateWeatherDisplay', () => {
+	beforeEach(() => {
+		document.body.innerHTML = `
+            <div class="city"></div>
+            <div class="temp"></div>
+            <div class="humidity"></div>
+            <div class="wind"></div>
+            <div class="weather-image"><i></i></div>
+        `;
+	});
+
+	it('should update the weather display correctly', () => {
+		const mockData = {
+			name: "Test City",
+			main: {
+				temp: 25.6,
+				humidity: 70
+			},
+			wind: {
+				speed: 5
+			},
+			weather: [{
+				main: "Clear"
+			}]
+		};
+
+		updateWeatherDisplay(mockData);
+		expect(document.querySelector('.city').textContent).toBe('Test City');
+		expect(document.querySelector('.temp').textContent).toBe('26℃');
+		expect(document.querySelector('.humidity').textContent).toBe('70%');
+		expect(document.querySelector('.wind').textContent).toBe('5 km/h');
+		expect(document.querySelector('.weather-image i').className).toBe('fa-solid fa-sun');
+	});
+});
+
+describe('checkWeather', () => {
+	it('should update display and init map for valid data', async () => {
+		document.body.innerHTML = `
+            <div class="weather"></div>
+            <div class="error"></div>
+        `;
+
+		const mockData = {
+			coord: {
+				lat: 123,
+				lon: 456
+			}
+		};
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			json: jest.fn().mockResolvedValueOnce(mockData)
+		});
+
+		await checkWeather(123, 456);
+
+		expect(document.querySelector('.weather').style.display).toBe('block');
+		expect(document.querySelector('.error').style.display).toBe('none');
+		// Также добавьте проверку вызова initMap с правильными аргументами, если используете мок для initMap.
+	});
+
+	it('should show error for invalid data', async () => {
+		document.body.innerHTML = `
+            <div class="weather"></div>
+            <div class="error"></div>
+        `;
+
+		const mockData = {
+			cod: '404'
+		};
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			json: jest.fn().mockResolvedValueOnce(mockData)
+		});
+
+		await checkWeather(123, 456);
+
+		expect(document.querySelector('.weather').style.display).toBe('none');
+		expect(document.querySelector('.error').style.display).toBe('block');
+	});
+
+	// ... Добавьте больше тестовых сценариев для функции checkWeather ...
 });

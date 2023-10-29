@@ -28,13 +28,16 @@ export function handleKeyDown(event) {
 
 export function initializeApp() {
 	const searchButton = document.querySelector(".search-box button");
-	// Обработчик клика по кнопке поиска
 	searchButton.addEventListener("click", handleSearchClick);
-
 	const searchInput = document.querySelector(".search-box input");
-	// Обработчик нажатия клавиши Enter в поле ввода
 	searchInput.addEventListener("keydown", handleKeyDown);
+	searchInput.addEventListener('input', (event) => {
+		const regex = /^[А-Яа-яЁё\s]*$/;
+
+		if (!regex.test(event.target.value)) {
+			event.target.value = event.target.value.slice(0, -1);
+		}
+	});
 	initializeCities();
 }
-
 document.addEventListener("DOMContentLoaded", initializeApp);

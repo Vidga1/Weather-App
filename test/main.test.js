@@ -1,11 +1,13 @@
 import { checkWeather } from '../src/js/weather';
 import { getGeoLocation } from '../src/js/geoLocation';
-import { addCityToList, updateCityList } from '../src/js/cityList'; 
+import { addCityToList } from '../src/js/cityList'; 
+import { updateCityList } from '../src/js/localStorage'; 
 import { searchCity, initializeCities, handleSearchClick, handleKeyDown, initializeApp } from '../src/js/main';  
 
 jest.mock('../src/js/weather');
 jest.mock('../src/js/geoLocation');
 jest.mock('../src/js/cityList'); 
+jest.mock('../src/js/localStorage'); 
 
 
 describe('Main functions', () => {

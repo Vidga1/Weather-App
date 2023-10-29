@@ -3,7 +3,7 @@ name: Deploy to GithubPages
 on:
   push:
     branches:
-      - step-9
+      - step-10
 
 jobs:
   deploy-to-gh-pages:

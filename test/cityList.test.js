@@ -1,57 +1,79 @@
-import { addCityToList, updateCityList } from '../src/js/cityList';
-import { checkWeather } from '../src/js/weather'; 
+import { addCityToList } from '../src/js/cityList'
+import { checkWeather } from '../src/js/weather'
 
-jest.mock('../src/js/weather');
+let originalConsoleLog;
 
-describe('City List', () => {
+beforeEach(() => {
+	originalConsoleLog = window.console.log;  // сохраняем оригинальную функцию
+	window.console.log = jest.fn();           // заменяем на мок
+});
+
+afterEach(() => {
+	window.console.log = originalConsoleLog;  // восстанавливаем оригинальную функцию после каждого теста
+});
+
+jest.mock('../src/js/weather', () => ({
+	checkWeather: jest.fn()
+}));
+  
+describe('addCityToList', () => {
 	let cityList;
-    
+  
 	beforeEach(() => {
-		cityList = document.createElement('ul');
-		cityList.className = 'city-list';
-		document.body.appendChild(cityList);
+	  // Resetting the DOM and mock calls before each test
+	  checkWeather.mockClear();
+	  document.body.innerHTML = '<ul class="city-list"></ul>';
+	  cityList = document.querySelector(".city-list");
 	});
   
-	afterEach(() => {
-		document.body.removeChild(cityList);
-		localStorage.clear();
+	it('should not add city if it is already in the list', () => {
+	  const listItem = document.createElement("li");
+	  listItem.textContent = "MOSCOW";
+	  cityList.appendChild(listItem);
+  
+	  addCityToList("moscow");
+  
+	  expect(window.console.log).toHaveBeenCalledWith("Город уже в списке.");
+	  expect(cityList.children.length).toBe(1);
 	});
   
-	it('adds city to the list and attaches click event', () => {
-		addCityToList('Tokyo');
-		const listItem = cityList.firstChild;
-		expect(listItem.textContent).toBe('TOKYO');
-		expect(checkWeather).not.toHaveBeenCalled();
-		listItem.click();
-		expect(checkWeather).toHaveBeenCalledWith(null, null, 'Tokyo');
+	it('should log an error if city is invalid', () => {
+	  checkWeather.mockImplementation((_, __, ___, callback) => {
+			callback(false);
+	  });
+  
+	  addCityToList("invalidcity");
+  
+	  expect(window.console.log).toHaveBeenCalledWith("Введен неправильный город.");
+	  expect(cityList.children.length).toBe(0);
 	});
   
-	it('removes the first city when the list exceeds 10 cities', () => {
-		for (let i = 1; i <= 11; i++) {
-			addCityToList(`City${i}`);
-		}
-		expect(cityList.childElementCount).toBe(10);
-		expect(cityList.firstChild.textContent).toBe('CITY2');
+	it('should add valid city to DOM', () => {
+	  checkWeather.mockImplementation((_, __, ___, callback) => {
+			callback(true);
+	  });
+  
+	  addCityToList("moscow");
+  
+	  expect(cityList.children.length).toBe(1);
+	  expect(cityList.firstChild.textContent).toBe("MOSCOW");
 	});
   
-	it('updates the city list in local storage', () => {
-		updateCityList('Tokyo');
-		let cities = JSON.parse(localStorage.getItem("cities"));
-		expect(cities).toEqual(['Tokyo']);
-        
-		updateCityList('Paris');
-		cities = JSON.parse(localStorage.getItem("cities"));
-		expect(cities).toEqual(['Tokyo', 'Paris']);
-        
-		// Проверить, что список ограничивается до 10 последних городов
-		for (let i = 1; i <= 10; i++) {
-			updateCityList(`City${i}`);
-		}
-		cities = JSON.parse(localStorage.getItem("cities"));
-		expect(cities).toEqual(['City1', 'City2', 'City3', 'City4', 'City5', 'City6', 'City7', 'City8', 'City9', 'City10']);
-          
-		updateCityList('London');
-		cities = JSON.parse(localStorage.getItem("cities"));
-		expect(cities).toEqual(['City2', 'City3', 'City4', 'City5', 'City6', 'City7', 'City8', 'City9', 'City10', 'London']);
+	it('should limit the city list to 10 in DOM', () => {
+	  for (let i = 0; i < 10; i++) {
+			const listItem = document.createElement("li");
+			listItem.textContent = `City${i}`;
+			cityList.appendChild(listItem);
+	  }
+  
+	  checkWeather.mockImplementation((_, __, ___, callback) => {
+			callback(true);
+	  });
+  
+	  addCityToList("newcity");
+  
+	  expect(cityList.children.length).toBe(10);
+	  expect(cityList.firstChild.textContent).toBe("City1");
+	  expect(cityList.lastChild.textContent).toBe("NEWCITY");
 	});
 });

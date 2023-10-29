@@ -8,7 +8,8 @@
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "prepare": "husky install",
-    "build": "webpack --config webpack.config.js"
+    "build": "webpack --config webpack.config.js",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/Vidga1/Weather-App#readme",
   "dependencies": {
     "css-loader": "^6.8.1",
+    "gh-pages": "^6.0.0",
     "html-webpack-plugin": "^5.5.3",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",

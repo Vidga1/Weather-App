@@ -50,7 +50,7 @@ export function updateWeatherDisplay({ name, main, wind, weather }) {
 	}
 }
 
-export async function checkWeather(lat, lon, city) {
+export async function checkWeather(lat, lon, city, callback) {
 	const params = {
 		units: 'metric',
 		appid: apiKeyWeather
@@ -70,10 +70,12 @@ export async function checkWeather(lat, lon, city) {
 	const weatherElem = getDOMElement(".weather");
 
 	if (!data || data.cod === "404") {
+		if (callback) callback(false);
 		errorText.style.display = "block";
 		weatherElem.style.display = "none";
 	} else {
 		updateWeatherDisplay(data);
+		if (callback) callback(true);
 		weatherElem.style.display = "block";
 		errorText.style.display = "none";
 

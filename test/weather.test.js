@@ -1,4 +1,3 @@
-// Mock fetch
 import { fetchWeatherData, setWeatherIcon, checkWeather, updateWeatherDisplay } from '../src/js/weather';
 import { initMap } from '../src/js/map';
 

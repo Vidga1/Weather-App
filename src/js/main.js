@@ -1,6 +1,7 @@
 import { checkWeather } from './weather';
 import { getGeoLocation } from './geoLocation';
-import { addCityToList, updateCityList } from './cityList';
+import { addCityToList } from './cityList';
+import { updateCityList } from './localStorage';
 
 export function searchCity(city) {
 	checkWeather(null, null, city);

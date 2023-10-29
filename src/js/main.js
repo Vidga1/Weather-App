@@ -5,8 +5,7 @@ import { updateCityList } from './localStorage';
 
 export function searchCity(city) {
 	checkWeather(null, null, city);
-	addCityToList(city);
-	updateCityList(city);
+	updateCityList(city); 
 }
 
 export function initializeCities() {

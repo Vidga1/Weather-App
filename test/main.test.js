@@ -47,7 +47,6 @@ describe('Main functions', () => {
 	  searchCity('Test City');
 	  
 	  expect(checkWeather).toHaveBeenCalledWith(null, null, 'Test City');
-	  expect(addCityToList).toHaveBeenCalledWith('Test City');
 	  expect(updateCityList).toHaveBeenCalledWith('Test City');
 	});
   
